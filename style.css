@@ -1,28 +1,25 @@
-body {
-	padding: 2rem;
-	font-family: -apple-system, BlinkMacSystemFont, "Arial", sans-serif;
+/* Custom styles */
+.console {
+    background-color: #011627;
+    font-family: 'Courier New', monospace;
+    color: #d6deeb;
 }
-
-h1 {
-	font-size: 16px;
-	margin-top: 0;
+.progress-bar {
+    height: 6px;
+    transition: width 0.5s ease-in-out;
 }
-
-p {
-	color: rgb(107, 114, 128);
-	font-size: 15px;
-	margin-bottom: 10px;
-	margin-top: 5px;
+.blink {
+    animation: blink-animation 1s steps(5, start) infinite;
 }
-
-.card {
-	max-width: 620px;
-	margin: 0 auto;
-	padding: 16px;
-	border: 1px solid lightgray;
-	border-radius: 16px;
+@keyframes blink-animation {
+    to {
+        visibility: hidden;
+    }
 }
-
-.card p:last-child {
-	margin-bottom: 0;
+.flag {
+    border-left: 3px solid;
+    transition: all 0.3s ease;
+}
+.flag:hover {
+    transform: translateX(5px);
 }
