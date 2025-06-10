@@ -10,10 +10,6 @@ tags:
   - deepsite
 ---
 
-Here are drafts for the required documentation files:
-
----
-
 # RedTeam Playground 🐳
 
 ## Overview
