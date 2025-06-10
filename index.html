@@ -1,19 +1,430 @@
-<!doctype html>
-<html>
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<title>My static Space</title>
-		<link rel="stylesheet" href="style.css" />
-	</head>
-	<body>
-		<div class="card">
-			<h1>Welcome to your static Space!</h1>
-			<p>You can modify this app directly by editing <i>index.html</i> in the Files and versions tab.</p>
-			<p>
-				Also don't forget to check the
-				<a href="https://huggingface.co/docs/hub/spaces" target="_blank">Spaces documentation</a>.
-			</p>
-		</div>
-	</body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Team Playground</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom styles */
+        .console {
+            background-color: #011627;
+            font-family: 'Courier New', monospace;
+            color: #d6deeb;
+        }
+        .progress-bar {
+            height: 6px;
+            transition: width 0.5s ease-in-out;
+        }
+        .blink {
+            animation: blink-animation 1s steps(5, start) infinite;
+        }
+        @keyframes blink-animation {
+            to {
+                visibility: hidden;
+            }
+        }
+        .flag {
+            border-left: 3px solid;
+            transition: all 0.3s ease;
+        }
+        .flag:hover {
+            transform: translateX(5px);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Navbar -->
+    <nav class="bg-black py-4 px-6 flex justify-between items-center border-b border-gray-800">
+        <div class="flex items-center space-x-4">
+            <i class="fas fa-skull text-red-600 text-xl"></i>
+            <h1 class="text-xl font-bold">Red Team Playground</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="relative group">
+                <button class="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-md transition">
+                    <span id="connection-status" class="h-3 w-3 rounded-full bg-red-500"></span>
+                    <span>Disconnected</span>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div class="hidden group-hover:block absolute right-0 mt-2 w-48 bg-gray-900 rounded-md shadow-lg py-1 z-50">
+                    <a href="#" id="connect-btn" class="block px-4 py-2 text-sm hover:bg-gray-800">Connect to Environment</a>
+                    <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-800">Reset Playground</a>
+                    <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-800">View Documentation</a>
+                </div>
+            </div>
+            <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md transition">
+                <i class="fas fa-power-off"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-6">
+        <!-- Main Dashboard -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column - Targets -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Targets Overview -->
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                    <h2 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-crosshairs mr-2 text-red-500"></i>
+                        Targets
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="target-item bg-gray-700 hover:bg-gray-600 p-4 rounded-md transition cursor-pointer">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-medium">Web Server (web1)</h3>
+                                <span class="text-xs px-2 py-1 bg-red-500 rounded-full">Vulnerable</span>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-400">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-link"></i>
+                                    <span>http://web1.demo.local</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>LFI, SQLi, Weak Auth</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="target-item bg-gray-700 hover:bg-gray-600 p-4 rounded-md transition cursor-pointer">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-medium">Internal API</h3>
+                                <span class="text-xs px-2 py-1 bg-yellow-500 rounded-full">Misconfigured</span>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-400">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-link"></i>
+                                    <span>http://api.internal.local</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>Token Leakage, Insecure JWT</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="target-item bg-gray-700 hover:bg-gray-600 p-4 rounded-md transition cursor-pointer">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-medium">FTP Server</h3>
+                                <span class="text-xs px-2 py-1 bg-orange-500 rounded-full">Exposed</span>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-400">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-server"></i>
+                                    <span>ftp://ftp.demo.local:21</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>Anonymous Login, Weak ACLs</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attack Scenarios -->
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                    <h2 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-tasks mr-2 text-blue-500"></i>
+                        Attack Scenarios
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="scenario-item bg-gray-700 p-4 rounded-md border-l-4 border-blue-500">
+                            <h3 class="font-medium">Web-to-API Pivot</h3>
+                            <p class="text-xs text-gray-400 mt-1">Use SSRF to pivot from web server to internal API</p>
+                            <div class="mt-2 flex justify-between items-center">
+                                <span class="text-xs px-2 py-1 bg-gray-600 rounded-full">Difficulty: Medium</span>
+                                <button class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded transition">Start</button>
+                            </div>
+                        </div>
+
+                        <div class="scenario-item bg-gray-700 p-4 rounded-md border-l-4 border-red-500">
+                            <h3 class="font-medium">FTP to Root</h3>
+                            <p class="text-xs text-gray-400 mt-1">FTP credential theft leading to shell access and priv esc</p>
+                            <div class="mt-2 flex justify-between items-center">
+                                <span class="text-xs px-2 py-1 bg-gray-600 rounded-full">Difficulty: Hard</span>
+                                <button class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1 rounded transition">Start</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Column - Attack Console -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-800 rounded-lg shadow-lg h-full flex flex-col">
+                    <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                        <h2 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-terminal mr-2 text-green-500"></i>
+                            Attack Console
+                        </h2>
+                        <div class="flex space-x-2">
+                            <button class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded transition">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                            <button class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded transition">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="console p-4 flex-grow overflow-auto" id="terminal">
+                        <div class="mb-1">
+                            <span class="text-green-400">root@kali></span>
+                            <span class="blink">█</span>
+                        </div>
+                    </div>
+                    <div class="p-4 border-t border-gray-700">
+                        <div class="flex items-center bg-gray-900 rounded-md px-3 py-2">
+                            <span class="text-green-400 mr-2">$</span>
+                            <input type="text" id="command-input" class="bg-transparent outline-none flex-grow font-mono" placeholder="Enter command...">
+                            <button id="execute-btn" class="ml-2 bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs">Execute</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress and Flags -->
+        <div class="mt-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Progress -->
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                    <h2 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-chart-line mr-2 text-purple-500"></i>
+                        Exercise Progress
+                    </h2>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Completion</span>
+                                <span>25%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-purple-600 h-2 rounded-full" style="width: 25%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Scenarios</span>
+                                <span>0/2</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-yellow-500 h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Flags Captured</span>
+                                <span>0/3</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-red-500 h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Capture the Flag -->
+                <div class="md:col-span-2 bg-gray-800 rounded-lg shadow-lg p-6">
+                    <h2 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-flag mr-2 text-red-500"></i>
+                        Capture the Flag
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="flag bg-gray-700 p-4 rounded-md border-l-4 border-yellow-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-medium">/flag1.txt</h3>
+                                    <p class="text-xs text-gray-400">Basic web server vulnerability</p>
+                                </div>
+                                <span class="text-xs px-2 py-1 bg-gray-600 rounded-full">Not Found</span>
+                            </div>
+                        </div>
+
+                        <div class="flag bg-gray-700 p-4 rounded-md border-l-4 border-orange-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-medium">/flag2.txt</h3>
+                                    <p class="text-xs text-gray-400">Internal network access</p>
+                                </div>
+                                <span class="text-xs px-2 py-1 bg-gray-600 rounded-full">Not Found</span>
+                            </div>
+                        </div>
+
+                        <div class="flag bg-gray-700 p-4 rounded-md border-l-4 border-red-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-medium">/root/flag3.txt</h3>
+                                    <p class="text-xs text-gray-400">Privilege escalation</p>
+                                </div>
+                                <span class="text-xs px-2 py-1 bg-gray-600 rounded-full">Not Found</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="mt-6 bg-black p-4 rounded-md border border-yellow-800">
+            <div class="flex items-start">
+                <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-3"></i>
+                <div>
+                    <h3 class="font-bold text-yellow-500 mb-1">Security Disclaimer</h3>
+                    <p class="text-xs text-gray-400">This is a controlled environment for educational purposes only. Any techniques demonstrated should only be used in ethical security testing with proper authorization. Unauthorized access to computer systems is illegal.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connection Modal -->
+    <div id="connection-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-6">
+                <h2 class="text-xl font-bold mb-4">Connect to Environment</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Environment Type</label>
+                        <select class="w-full bg-gray-700 rounded-md px-3 py-2 outline-none">
+                            <option>Vulnerable Web App</option>
+                            <option>Internal API</option>
+                            <option>Full Network Simulation</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">IP Address</label>
+                        <input type="text" class="w-full bg-gray-700 rounded-md px-3 py-2 outline-none" value="192.168.1.10">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Port</label>
+                        <input type="text" class="w-full bg-gray-700 rounded-md px-3 py-2 outline-none" value="8080">
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button id="cancel-connect" class="px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 transition">Cancel</button>
+                    <button id="confirm-connect" class="px-4 py-2 rounded-md bg-green-600 hover:bg-green-700 transition">Connect</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Terminal functionality
+        const terminal = document.getElementById('terminal');
+        const commandInput = document.getElementById('command-input');
+        const executeBtn = document.getElementById('execute-btn');
+        
+        // Connection modal elements
+        const connectBtn = document.getElementById('connect-btn');
+        const connectionModal = document.getElementById('connection-modal');
+        const cancelConnect = document.getElementById('cancel-connect');
+        const confirmConnect = document.getElementById('confirm-connect');
+        const connectionStatus = document.getElementById('connection-status');
+        
+        // Target items
+        const targetItems = document.querySelectorAll('.target-item');
+        
+        // Scenarios
+        const scenarioItems = document.querySelectorAll('.scenario-item');
+        
+        // Flags
+        const flags = document.querySelectorAll('.flag');
+        
+        // Console commands
+        const commands = {
+            'help': () => printToTerminal('<br>Available commands:<br>- scan [target]<br>- exploit [vulnerability]<br>- connect [target]<br>- clear'),
+            'scan': (target) => printToTerminal(`<br>Scanning ${target || 'network'}...<br>`),
+            'exploit': (vuln) => printToTerminal(`<br>Attempting to exploit ${vuln || 'vulnerability'}...<br>`),
+            'clear': () => terminal.innerHTML = '<div class="mb-1"><span class="text-green-400">root@kali></span><span class="blink">█</span></div>'
+        };
+        
+        function printToTerminal(text) {
+            const currentPrompt = terminal.lastElementChild;
+            const newLine = document.createElement('div');
+            newLine.innerHTML = currentPrompt.innerHTML + text;
+            terminal.appendChild(newLine);
+            
+            // Add new prompt
+            const newPrompt = document.createElement('div');
+            newPrompt.className = 'mb-1';
+            newPrompt.innerHTML = '<span class="text-green-400">root@kali></span><span class="blink">█</span>';
+            terminal.appendChild(newPrompt);
+            
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        // Execute command
+        function executeCommand() {
+            const command = commandInput.value.trim();
+            if (!command) return;
+            
+            const parts = command.split(' ');
+            const cmd = parts[0];
+            const arg = parts.slice(1).join(' ');
+            
+            if (commands[cmd]) {
+                commands[cmd](arg);
+            } else {
+                printToTerminal(`<br>Command not found: ${cmd}<br>Type 'help' for available commands.<br>`);
+            }
+            
+            commandInput.value = '';
+        }
+        
+        // Event listeners
+        executeBtn.addEventListener('click', executeCommand);
+        commandInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                executeCommand();
+            }
+        });
+        
+        // Connection modal
+        connectBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            connectionModal.classList.remove('hidden');
+        });
+        
+        cancelConnect.addEventListener('click', () => {
+            connectionModal.classList.add('hidden');
+        });
+        
+        confirmConnect.addEventListener('click', () => {
+            connectionModal.classList.add('hidden');
+            connectionStatus.className = 'h-3 w-3 rounded-full bg-green-500';
+            connectionStatus.nextElementSibling.textContent = 'Connected';
+        });
+        
+        // Target items click
+        targetItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Remove active class from all targets
+                targetItems.forEach(i => i.classList.remove('border-blue-500'));
+                // Add active class to clicked target
+                item.classList.add('border-blue-500');
+                
+                const targetName = item.querySelector('h3').textContent;
+                printToTerminal(`<br>Target selected: ${targetName}<br>`);
+            });
+        });
+        
+        // Scenario buttons
+        scenarioItems.forEach(scenario => {
+            const button = scenario.querySelector('button');
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const scenarioName = scenario.querySelector('h3').textContent;
+                printToTerminal(`<br>Starting scenario: ${scenarioName}<br>`);
+            });
+        });
+        
+        // Initial help message
+        setTimeout(() => {
+            printToTerminal('<br>Welcome to Red Team Playground. Type \'help\' for available commands.<br>');
+        }, 500);
+    </script>
+<p style="border-radius: 8px; text-align: center; font-size: 12px; color: #fff; margin-top: 16px;position: fixed; left: 8px; bottom: 8px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 4px 8px;">Made with <img src="https://enzostvs-deepsite.hf.space/logo.svg" alt="DeepSite Logo" style="width: 16px; height: 16px; vertical-align: middle;display:inline-block;margin-right:3px;filter:brightness(0) invert(1);"><a href="https://enzostvs-deepsite.hf.space" style="color: #fff;text-decoration: underline;" target="_blank" >DeepSite</a> - 🧬 <a href="https://enzostvs-deepsite.hf.space?remix=S-Dreamer/redteam-playground" style="color: #fff;text-decoration: underline;" target="_blank" >Remix</a></p></body>
 </html>
